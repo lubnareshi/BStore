@@ -55,15 +55,11 @@
         <tr>
           <td>
             <figure class="itemside align-items-center">
-              <div class="aside"><img src="{{ item.product.images.url }}" class="img-sm"></div>
+              <div class="aside"><img src="{{ item.product.images.url }}" class="img-sm" height="90"></div>
               <figcaption class="info">
-                <a href="{{item.product.get_url}}" class="title text-dark">{{ item.product.product_name }}</a>
+                <a href="{{item.product.get_url}}" class="title text-dark">{{ item.product.book_title }}</a>
                 <p class="text-muted small">
-                  {% if item.variations.all %}
-                    {% for itm in item.variations.all %}
-                      {{itm.variation_category | capfirst}} : {{itm.variation_value | capfirst}} <br>
-                    {% endfor %}
-                  {% endif %}
+
 
               </figcaption>
             </figure>
@@ -76,7 +72,7 @@
           <td>
             <div class="price-wrap">
               <var class="price">${{ item.sub_total }}</var>
-              <small class="text-muted"> ${{ item.product.price }} each </small>
+              <!-- <small class="text-muted"> ${{ item.product.price }} each </small> -->
             </div> <!-- price-wrap .// -->
           </td>
 
@@ -93,21 +89,21 @@
 
 		<div class="card">
 		<div class="card-body">
-			<dl class="dlist-align">
-			  <dt>Total price:</dt>
-			  <dd class="text-right">${{total}}</dd>
+			<dl class="text-right">
+			  <dt class="">Total price:</dt>
+			  <dd class="">${{total}}</dd>
 			</dl>
-			<dl class="dlist-align">
-			  <dt>Tax:</dt>
-			  <dd class="text-right"> ${{tax}}</dd>
+			<dl class="right-align">
+			  <dt class="">Tax:</dt>
+			  <dd class=""> ${{tax}}</dd>
 			</dl>
-			<dl class="dlist-align">
-			  <dt>Grand Total:</dt>
-			  <dd class="text-right text-dark b"><strong>${{grand_total}}</strong></dd>
+			<dl class="right-align">
+			  <dt class="">Grand Total:</dt>
+			  <dd class="text-dark b"><strong>${{grand_total}}</strong></dd>
 			</dl>
 			<hr>
 			<p class="text-center mb-3">
-				<img src="{% static './images/misc/payments.png' %}" height="26">
+				<img src="{% static './images/payments.png' %}" height="26">
 			</p>
 
 
@@ -172,8 +168,7 @@
 						return actions.order.create({
 							purchase_units: [{
 								amount: {
-									// value: amount,
-									value: '880',
+									value: amount,
 								}
 							}]
 						});

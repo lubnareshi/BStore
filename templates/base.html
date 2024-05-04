@@ -30,7 +30,7 @@
         <!-- Left elements -->
         <div class="col-lg-2 col-sm-4 col-4">
           <a href="{% url 'home' %}" class="float-start">
-            <img src="{% static 'images/logo.png' %}" height="90" />
+            <img src="{% static 'images/logo.png' %}" height="110" />
           </a>
         </div>
         <!-- Left elements -->
@@ -38,24 +38,59 @@
         <!-- Center elements -->
         <div class="order-lg-last col-lg-5 col-sm-8 col-8">
           <div class="d-flex float-end">
-            <a href="https://github.com/mdbootstrap/bootstrap-material-design" class="me-1 border rounded py-1 px-3 nav-link d-flex align-items-center" target="_blank"> <i class="fas fa-user-alt m-1 me-md-2"></i><p class="d-none d-md-block mb-0">Sign in</p> </a>
-            <a href="https://github.com/mdbootstrap/bootstrap-material-design" class="me-1 border rounded py-1 px-3 nav-link d-flex align-items-center" target="_blank"> <i class="fas fa-heart m-1 me-md-2"></i><p class="d-none d-md-block mb-0">Wishlist</p> </a>
-            <a href="https://github.com/mdbootstrap/bootstrap-material-design" class="border rounded py-1 px-3 nav-link d-flex align-items-center" target="_blank"> <i class="fas fa-shopping-cart m-1 me-md-2"></i><p class="d-none d-md-block mb-0">My cart</p> </a>
+
+
+            {% if user.id is None %}
+            <a href="{% url 'login' %}" class="me-1 border rounded py-1 px-3 nav-link d-flex align-items-center"> <i class="fas fa-user-alt m-1 me-md-2"></i><p class="d-none d-md-block mb-0">Sign in</p> </a>
+            <a href="{% url 'register' %}" class="me-1 border rounded py-1 px-3 nav-link d-flex align-items-center"> <i class="fas fa-user-alt m-1 me-md-2"></i><p class="d-none d-md-block mb-0">Register</p> </a>
+            {% else %}
+            
+            <a href="{% url 'logout' %}" class="me-1 border rounded py-1 px-3 nav-link d-flex align-items-center"> <i class="fas fa-user-alt m-1 me-md-2"></i><p class="d-none d-md-block mb-0">Sign Out</p></a>
+            <a href="{% url 'my_orders' %}" class="me-1 border rounded py-1 px-3 nav-link d-flex align-items-center"> <i class="fas fa-user-alt m-1 me-md-2"></i><p class="d-none d-md-block mb-0">My Orders</p></a>
+            
+            <!-- <div class="col-lg col-sm col-md col-6 flex-grow-0">
+              <div class="category-wrap dropdown d-inline-block float-right">
+                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                  <i class="fa fa-bars"></i> My Orders
+                </button>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="#">All Products </a>
+                  <a class="dropdown-item" href="#">Test </a>
+                  
+                </div>
+              </div>  
+             </div>  -->
+
+            <!-- <div class="dropdown">
+              <button onclick="myFunction()" class="dropbtn">Dropdown</button>
+              <div id="myDropdown" class="dropdown-content">
+                  <a href="#">Option 1</a>
+                  <a href="#">Option 2</a>
+                  <a href="#">Option 3</a>
+              </div>
+          </div> -->
+
+            {% endif %}
+            
+            <!-- <a href="{% url 'cart' %}" class="me-1 border rounded py-1 px-3 nav-link d-flex align-items-center"> <i class="fas fa-heart m-1 me-md-2"></i><p class="d-none d-md-block mb-0">Wishlist</p> </a> -->
+            <a href="{% url 'cart' %}" class="border rounded py-1 px-3 nav-link d-flex align-items-center"> <i class="fas fa-shopping-cart m-1 me-md-2"></i><p class="d-none d-md-block mb-0">My Cart</p> </a>
           </div>
         </div>
         <!-- Center elements -->
 
         <!-- Right elements -->
         <div class="col-lg-5 col-md-12 col-12">
+          <form action="{% url 'search' %}" class="search" method="GET">
           <div class="input-group float-center">
             <div class="form-outline">
-              <input type="search" id="form1" class="form-control" />
+              <input type="search" id="form1" class="form-control" name="keyword" />
               <label class="form-label" for="form1">Search</label>
             </div>
             <button type="button" class="btn btn-primary shadow-0">
               <i class="fas fa-search"></i>
             </button>
           </div>
+          </form>
         </div>
         <!-- Right elements -->
       </div>
@@ -85,33 +120,33 @@
         <!-- Left links -->
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link text-dark" aria-current="page" href="#">Home</a>
+            <a class="nav-link text-dark" aria-current="page" href="{% url 'home' %}">Home</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-dark" href="#">Categories</a>
+            <a class="nav-link text-dark" href="{% url 'home' %}">All Categories</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-dark" href="#">Hot offers</a>
+            <a class="nav-link text-dark" href="{% url 'products_by_category' 'science' %}">Science</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-dark" href="#">Gift boxes</a>
+            <a class="nav-link text-dark" href="{% url 'products_by_category' 'historical' %}">History</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-dark" href="#">Projects</a>
+            <a class="nav-link text-dark" href="{% url 'products_by_category' 'literature' %}">Literature</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-dark" href="#">Menu item</a>
+            <a class="nav-link text-dark" href="{% url 'products_by_category' 'biography' %}">Biographies</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-dark" href="#">Menu name</a>
+            <a class="nav-link text-dark" href="{% url 'products_by_category' 'short-story' %}">Short Stories</a>
           </li>
           <!-- Navbar dropdown -->
-          <li class="nav-item dropdown">
+          <!-- <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-mdb-toggle="dropdown" aria-expanded="false">
               Others
-            </a>
+            </a> -->
             <!-- Dropdown menu -->
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <!-- <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
               <li>
                 <a class="dropdown-item" href="#">Action</a>
               </li>
@@ -122,8 +157,8 @@
               <li>
                 <a class="dropdown-item" href="#">Something else here</a>
               </li>
-            </ul>
-          </li>
+            </ul> -->
+          <!-- </li> -->
         </ul>
         <!-- Left links -->
       </div>

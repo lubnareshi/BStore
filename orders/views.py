@@ -1,15 +1,14 @@
 from django.shortcuts import render,redirect
 from django.http import JsonResponse
 from carts.models import CartItem
-# from .forms import OrderForm
+from .forms import OrderForm
 from .models import Order, Payment, OrderProduct
 from store.models import Book
 import datetime
 import json
+from django.core.exceptions import ObjectDoesNotExist
 
 # Create your views here.
-def place_order(request):
-    return render(request, 'orders/payments.html')
 
 
 def payments(request):
@@ -47,13 +46,13 @@ def payments(request):
         orderproduct.save()
 
         cart_item = CartItem.objects.get(id=item.id)
-        product_variation = cart_item.variations.all()
+        
         orderproduct = OrderProduct.objects.get(id=orderproduct.id)
-        orderproduct.variations.set(product_variation)
+        
         orderproduct.save()
 
     # Reduce the quantity of the sold Products
-    product = Product.objects.get(id=item.product_id)
+    product = Book.objects.get(id=item.product_id)
     product.stock -= item.quantity
     product.save()
 
@@ -73,33 +72,126 @@ def payments(request):
 
 
 
+def place_order(request, total=0, quantity=0):
+    current_user = request.user
+
+    # If the cart count is less than or equal to 0, the redirect back to shop
+    cart_items = CartItem.objects.filter(user=current_user)
+    cart_count = cart_items.count()
+    if cart_count <= 0:
+        return redirect('home')
+
+    grand_total = 0
+    tax = 0
+    for cart_item in cart_items:
+        total += (cart_item.product.price * cart_item.quantity)
+        quantity += cart_item.quantity
+    tax = (2 * total)/100
+    grand_total = total + tax
+
+    if request.method == 'POST':
+        form = OrderForm(request.POST)
+        if form.is_valid():
+            # store all the billing info inside Order table
+            data = Order()
+            data.user = current_user
+            data.first_name = form.cleaned_data['first_name']
+            data.last_name = form.cleaned_data['last_name']
+            data.phone = form.cleaned_data['phone']
+            data.email = form.cleaned_data['email']
+            data.address_line_1 = form.cleaned_data['address_line_1']
+            data.address_line_2 = form.cleaned_data['address_line_2']
+            data.country = form.cleaned_data['country']
+            data.state = form.cleaned_data['state']
+            data.city = form.cleaned_data['city']
+            data.order_note = form.cleaned_data['order_note']
+            data.order_total = grand_total
+            data.tax = tax
+            data.ip = request.META.get('REMOTE_ADDR')
+            data.save()
+
+            # Generate Order Number
+            yr = int(datetime.date.today().strftime('%Y'))
+            dt = int(datetime.date.today().strftime('%d'))
+            mt = int(datetime.date.today().strftime('%m'))
+            d = datetime.date(yr, mt, dt)
+            current_date = d.strftime("%Y%m%d") # 20240405
+            order_number = current_date + str(data.id)
+            data.order_number = order_number
+            data.save()
+
+            order = Order.objects.get(user=current_user, is_ordered=False, order_number=order_number)
+            context = {
+                'order': order,
+                'cart_items': cart_items,
+                'total': total,
+                'tax': tax,
+                'grand_total': grand_total,
+            }
+            return render(request, 'orders/payments.html', context)
+        else:
+            return redirect('checkout')
+
+
+
+
+
+
 def order_complete(request):
 
-    # order_number = request.GET.get('order_number')
-    # transID = request.GET.get('payment_id')
-    # try:
-    #     order = Order.objects.get(order_number=order_number, is_ordered=True)
-    #     ordered_products = OrderProduct.objects.filter(order_id=order.id)
+    order_number = request.GET.get('order_number')
+    transID = request.GET.get('payment_id')
+    try:
+        order = Order.objects.get(order_number=order_number, is_ordered=True)
+        ordered_products = OrderProduct.objects.filter(order_id=order.id)
 
-    #     subtotal = 0
-    #     for i in ordered_products:
-    #         subtotal += i.product_price * i.quantity
+        subtotal = 0
+        for i in ordered_products:
+            subtotal += i.product_price * i.quantity
 
-    #     payment = Payment.objects.get(payment_id=transID)
-    #     context = {
-    #         'order': order,
-    #         'ordered_products': ordered_products,
-    #         'order_number': order.order_number,
-    #         'transID': payment.payment_id,
-    #         'payment': payment,
-    #         'subtotal': subtotal,
-    #     }
+        payment = Payment.objects.get(payment_id=transID)
+        context = {
+            'order': order,
+            'ordered_products': ordered_products,
+            'order_number': order.order_number,
+            'transID': payment.payment_id,
+            'payment': payment,
+            'subtotal': subtotal,
+        }
 
-    #     return render(request, 'orders/order_complete.html', context)
+        return render(request, 'orders/order_complete.html', context)
 
-    # except (Payment.DoesNotExist, Order.DoesNotExist):
-    #     return redirect('home')
+    except (Payment.DoesNotExist, Order.DoesNotExist):
+        return redirect('home')
 
 
     return render(request, 'orders/order_complete.html')
 
+
+
+
+def my_orders(request, total=0, quantity=0, ordered_products=None):
+    try:
+        tax = 0
+        grand_total = 0
+        if request.user.is_authenticated:
+            ordered_products = OrderProduct.objects.filter(user=request.user)
+            
+        else:
+            pass
+        for ordered_product in ordered_products:
+            total += ordered_product.product_price
+            quantity += ordered_product.quantity
+        tax = (2 * total)/100
+        grand_total = total + tax
+    except ObjectDoesNotExist:
+        pass    # simply ignore
+
+    context = {
+        'total': total,
+        'quantity': quantity,
+        'tax': tax,
+        'grand_total': grand_total,
+        'ordered_products': ordered_products,
+    }
+    return render(request, 'orders/my_orders.html', context)
