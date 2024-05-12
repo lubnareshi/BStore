@@ -83,7 +83,7 @@ def cart(request, total=0, quantity=0, cart_items=None):
         tax = 0
         grand_total = 0
         if request.user.is_authenticated:
-            print(request.user)
+            # print(request.user)
             cart_items = CartItem.objects.filter(user=request.user, is_active=True)
             
         else:
